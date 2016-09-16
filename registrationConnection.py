@@ -24,7 +24,7 @@ try:
       
 except http.client.HTTPException:   
     print("Couldn't connect to the api")
-
+      
 def reverseString(string):
     return string[-1::-1]
     
@@ -50,6 +50,27 @@ def sendNeedleLocation(needleIndex,path):
     server.request('POST',path,json.dumps({'token':apiToken,'needle':str(needleIndex)}),headers)
     server.getresponse().read()
     
+
+def createPrefixArray(dictionary):
+    realDict=json.loads(dictionary)
+    pre=realDict.get('prefix')
+    print("prefix is : ",pre,"\n\n\n\n\n")
+    array=realDict.get('array')
+    print('origninal array is:   ',array,'\n\n\n\n\n')
+    myArray=[]
+    count=0;
+    for word in array:
+        if len(pre)>len(word) or word[:len(pre)]!=pre:
+            myArray.append(word)
+        count+=1
+    print(myArray)    
+    return myArray    
+
+def sendPrefixArray(path,array):
+    server.request('POST',path,json.dumps({'token':apiToken,'array':array}),headers)
+    server.getresponse().read()
+
+    
     
 reversed=reverseString(getInfo('/api/reverse',apiToken))
 sendReversed(reversed,'/api/reverse/validate',apiToken)
@@ -57,6 +78,10 @@ dictionary=getInfo('/api/haystack',apiToken)
 
 index=findNeedle(dictionary)
 sendNeedleLocation(index,'/api/haystack/validate')
+
+prefixDict=getInfo('/api/prefix',apiToken)
+myArray=createPrefixArray(prefixDict)
+sendPrefixArray ('/api/prefix/validate',myArray)
 
 
 
