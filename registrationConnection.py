@@ -2,7 +2,7 @@
 """
 Created on Thu Sep 15 16:49:46 2016
 
-@author: Elias
+@author: Elias Muche 
 """
 
 import http.client
@@ -20,26 +20,43 @@ try:
    server.request('POST','/api/register',tokenKeys,headers)
    status=server.getresponse()
    status.read()
-   print(status)
-        
+ 
+      
 except http.client.HTTPException:   
-    print("There was a problem")
+    print("Couldn't connect to the api")
 
 def reverseString(string):
-    print(string)
     return string[-1::-1]
     
-def  retrieveString(path, token):
-    
-    server.request('POST', path, json.dumps({'token':token}), headers) 
-    word=server.getresponse().read().decode('utf-8')
-    #print(word)
-    return word
     
 def sendReversed(reverse,path,token):
     server.request('POST',path,json.dumps({'token':token,'string':reverse}),headers)
     server.getresponse().read() 
+
+def getInfo(path,token):
+    server.request('POST',path,json.dumps({'token':token}),headers)
+    return server.getresponse().read().decode('utf-8')
     
-reversed=reverseString(retrieveString('/api/reverse',apiToken))
+def findNeedle(dictionary):
+    realDict=json.loads(dictionary)   
+    needle=realDict.get('needle')  
+    array=realDict.get('haystack')
+    for i in range(0,len(array)):
+        if array[i]==needle:
+            return i
+       
+
+def sendNeedleLocation(needleIndex,path):
+    server.request('POST',path,json.dumps({'token':apiToken,'needle':str(needleIndex)}),headers)
+    server.getresponse().read()
+    
+    
+reversed=reverseString(getInfo('/api/reverse',apiToken))
 sendReversed(reversed,'/api/reverse/validate',apiToken)
+dictionary=getInfo('/api/haystack',apiToken)
+
+index=findNeedle(dictionary)
+sendNeedleLocation(index,'/api/haystack/validate')
+
+
 
